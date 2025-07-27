@@ -1,1 +1,43 @@
+services:
+  - type: web
+    name: n8n-tshirt-analyzer
+    env: docker
+    dockerfilePath: ./Dockerfile
+    plan: starter  # or whatever plan you're using
+    envVars:
+      - key: N8N_BASIC_AUTH_ACTIVE
+        value: "true"
+      - key: N8N_BASIC_AUTH_USER
+        fromGroup: n8n-secrets
+      - key: N8N_BASIC_AUTH_PASSWORD
+        fromGroup: n8n-secrets
+      - key: WEBHOOK_URL
+        value: https://your-service-name.onrender.com
+      - key: N8N_HOST
+        value: 0.0.0.0
+      - key: N8N_PORT
+        value: 5678
+      - key: N8N_PROTOCOL
+        value: https
+      - key: NODE_ENV
+        value: production
 
+# Optional: PostgreSQL database
+  - type: pgsql
+    name: n8n-tshirt-db
+    databaseName: tshirt_analysis
+    user: n8n_user
+    plan: starter
+
+envVarGroups:
+  - name: n8n-secrets
+    envVars:
+      - key: N8N_BASIC_AUTH_USER
+        generateValue: true
+      - key: N8N_BASIC_AUTH_PASSWORD
+        generateValue: true
+      - key: DATABASE_URL
+        fromService:
+          type: pgsql
+          name: n8n-tshirt-db
+          property: connectionString
